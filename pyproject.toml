@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "claudebox"
-version = "0.1.1"
+version = "0.1.2"
 description = "Run Claude Code CLI in isolated micro-VMs"
 readme = "README.md"
 license = "MIT"
