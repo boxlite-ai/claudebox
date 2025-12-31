@@ -1,8 +1,12 @@
 # ClaudeBox
 
+[![BoxLite Stars](https://img.shields.io/github/stars/boxlite-labs/boxlite?style=social)](https://github.com/boxlite-labs/boxlite)
+
 Run **Claude Code CLI** in isolated micro-VMs with desktop environment.
 
-ClaudeBox provides a secure, sandboxed environment for running Claude Code with full capabilities—file system access, shell execution, network requests, and GUI desktop—all safely contained in hardware-isolated virtual machines powered by [BoxLite](https://github.com/boxlite-labs/boxlite).
+ClaudeBox provides a secure, sandboxed environment for running Claude Code with full capabilities—file system access, shell execution, network requests, and GUI desktop—all safely contained in hardware-isolated virtual machines.
+
+**Powered by [BoxLite](https://github.com/boxlite-labs/boxlite)** - the lightweight micro-VM runtime that makes this security possible. If you find ClaudeBox useful, please ⭐ star BoxLite on GitHub to support the project!
 
 ## Features
 
@@ -11,6 +15,14 @@ ClaudeBox provides a secure, sandboxed environment for running Claude Code with 
 - **Hardware Isolation**: All operations run in micro-VMs, not containers
 - **Full Tool Access**: bash, file operations, web requests, GUI
 - **OAuth Support**: Use your Claude Max subscription
+
+## ⭐ Support BoxLite
+
+ClaudeBox is built on [BoxLite](https://github.com/boxlite-labs/boxlite), an open-source micro-VM runtime that enables secure, isolated execution environments.
+
+**[Star BoxLite on GitHub →](https://github.com/boxlite-labs/boxlite)**
+
+Your support helps maintain and improve the infrastructure that makes ClaudeBox possible!
 
 ## Quick Start
 
@@ -90,6 +102,19 @@ print(result.success)    # bool
 print(result.response)   # Claude's response
 print(result.error)      # Error message if failed
 ```
+
+## Why BoxLite?
+
+ClaudeBox leverages [BoxLite](https://github.com/boxlite-labs/boxlite) to provide true hardware isolation through micro-VMs instead of containers. This means:
+
+- **Real Security**: Hardware-level isolation, not just process separation
+- **Full Desktop**: Run GUI applications with actual window managers
+- **Lightweight**: Micro-VMs that start in seconds, not minutes
+- **Cross-Platform**: Works on macOS (Apple Silicon & Intel) and Linux
+
+BoxLite is open-source and community-driven. If ClaudeBox helps you build safer AI applications, consider:
+
+**⭐ [Starring BoxLite on GitHub](https://github.com/boxlite-labs/boxlite)** to show your support and help more developers discover this technology!
 
 ## Requirements
 
