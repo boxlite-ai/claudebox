@@ -37,7 +37,7 @@ class ClaudeBox:
         env: list[tuple[str, str]] | None = None,
         auto_remove: bool = True,
     ):
-        from boxlite import BoxOptions, Boxlite
+        from boxlite import Boxlite, BoxOptions
 
         env_list = list(env or [])
 
