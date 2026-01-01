@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2025-01-01
+
+### Added
+- Python 3.13 and 3.14 support in package classifiers
+
+### Changed
+- Updated documentation to correctly show Python 3.10+ requirement (was incorrectly showing 3.9+)
+
 ## [0.3.0] - 2025-01-01
 
 ### Added
@@ -116,7 +124,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Basic error handling and result types
 - MIT License
 
-[unreleased]: https://github.com/boxlite-labs/claudebox/compare/v0.3.0...HEAD
+[unreleased]: https://github.com/boxlite-labs/claudebox/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/boxlite-labs/claudebox/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/boxlite-labs/claudebox/compare/v0.1.2...v0.3.0
 [0.1.2]: https://github.com/boxlite-labs/claudebox/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/boxlite-labs/claudebox/compare/v0.1.0...v0.1.1
