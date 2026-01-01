@@ -218,19 +218,19 @@ def combine_rewards(*reward_fns: RewardFunction, weights: list[float] | None = N
         ...     weights=[0.7, 0.3]
         ... )
     """
-    if weights is None:
-        weights = [1.0 / len(reward_fns)] * len(reward_fns)
+    # Normalize weights
+    final_weights: list[float] = weights if weights is not None else [1.0 / len(reward_fns)] * len(reward_fns)
 
-    if len(weights) != len(reward_fns):
+    if len(final_weights) != len(reward_fns):
         raise ValueError("Number of weights must match number of reward functions")
 
-    if abs(sum(weights) - 1.0) > 1e-6:
+    if abs(sum(final_weights) - 1.0) > 1e-6:
         raise ValueError("Weights must sum to 1.0")
 
     class CombinedReward(RewardFunction):
         def __call__(self, result: CodeResult) -> float:
             total = 0.0
-            for reward_fn, weight in zip(reward_fns, weights):
+            for reward_fn, weight in zip(reward_fns, final_weights):
                 total += reward_fn(result) * weight
             return total
 

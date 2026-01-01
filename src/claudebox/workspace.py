@@ -190,7 +190,7 @@ class WorkspaceManager:
         Returns:
             List of SessionInfo for all sessions
         """
-        sessions = []
+        sessions: list[SessionInfo] = []
 
         if not self.sessions_dir.exists():
             return sessions

@@ -243,28 +243,26 @@ class ActionLogger:
         """
         logs = self.get_logs()
 
-        stats = {
-            "total_events": len(logs),
-            "events_by_type": {},
-            "total_duration_ms": 0,
-            "tools_used": set(),
-        }
+        events_by_type: dict[str, int] = {}
+        tools_used: set[str] = set()
+        total_duration_ms = 0
 
         for log in logs:
             # Count by event type
             event_type = log.event_type
-            stats["events_by_type"][event_type] = (
-                stats["events_by_type"].get(event_type, 0) + 1
-            )
+            events_by_type[event_type] = events_by_type.get(event_type, 0) + 1
 
             # Sum duration
             if log.duration_ms:
-                stats["total_duration_ms"] += log.duration_ms
+                total_duration_ms += log.duration_ms
 
             # Track tools
             if log.tool:
-                stats["tools_used"].add(log.tool)
+                tools_used.add(log.tool)
 
-        stats["tools_used"] = list(stats["tools_used"])
-
-        return stats
+        return {
+            "total_events": len(logs),
+            "events_by_type": events_by_type,
+            "total_duration_ms": total_duration_ms,
+            "tools_used": list(tools_used),
+        }

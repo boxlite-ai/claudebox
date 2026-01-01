@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import os
 import uuid
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
-from claudebox.results import CodeResult
+from claudebox.results import CodeResult, SessionMetadata
 from claudebox.session import SessionManager
 from claudebox.workspace import SessionInfo, WorkspaceManager
 
@@ -47,7 +47,7 @@ class ClaudeBox:
         skills: list | None = None,
         template: str | None = None,
         # Phase 3: RL Support & Security
-        reward_fn: callable | None = None,
+        reward_fn: Callable[[CodeResult], float] | None = None,
         security_policy: object | None = None,
     ):
         from boxlite import Boxlite, BoxOptions
@@ -149,7 +149,7 @@ class ClaudeBox:
         )
 
         # Store session metadata (will be updated on first code() call)
-        self._session_metadata = None
+        self._session_metadata: SessionMetadata | None = None
 
     async def __aenter__(self) -> ClaudeBox:
         await self._box.__aenter__()

@@ -124,7 +124,7 @@ class TrajectoryExporter:
         else:
             # Save as JSON
             with open(path, "w") as f:
-                json.dumps(trajectory, f, indent=2)
+                json.dump(trajectory, f, indent=2)
 
     def get_state_action_pairs(self) -> list[tuple[dict, dict, dict]]:
         """
