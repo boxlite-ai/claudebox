@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-01-01
+
+### Added
+- **Comprehensive Documentation**: Complete documentation for painless developer onboarding and AI understanding
+  - **Foundation**: CHANGELOG.md, CONTRIBUTING.md, examples/README.md index, enhanced README.md
+  - **Getting Started Guides** (4 files): Installation, Quick Start, Authentication, First Session tutorials
+  - **User Guides** (6 files): Sessions, Skills, Templates, Security, RL Training, Workspace management
+  - Total: 14 documentation files with ~6,000+ lines
+  - Consistent structure: Overview → Reference → Patterns → Best Practices → Troubleshooting
+  - Complete coverage from installation to advanced features
+  - All 71 examples now indexed and discoverable in examples/README.md
+
+### Changed
+- Enhanced README.md with comprehensive feature showcase and navigation
+
 ## [0.1.2] - 2025-01-01
 
 ### Added
@@ -101,7 +116,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Basic error handling and result types
 - MIT License
 
-[unreleased]: https://github.com/boxlite-labs/claudebox/compare/v0.1.2...HEAD
+[unreleased]: https://github.com/boxlite-labs/claudebox/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/boxlite-labs/claudebox/compare/v0.1.2...v0.3.0
 [0.1.2]: https://github.com/boxlite-labs/claudebox/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/boxlite-labs/claudebox/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/boxlite-labs/claudebox/releases/tag/v0.1.0
