@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import os
 import uuid
-from typing import TYPE_CHECKING, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from claudebox.results import CodeResult, SessionMetadata
 from claudebox.session import SessionManager
