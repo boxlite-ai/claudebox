@@ -7,7 +7,6 @@ import pytest
 
 from claudebox import ClaudeBox
 
-
 pytestmark = pytest.mark.real
 
 
@@ -104,7 +103,7 @@ async def test_03_persistent_session(ensure_oauth_token, temp_workspace):
         # Verify workspace persists
         assert workspace_path.exists()
         assert marker.exists()
-        print(f"   ✅ Workspace persisted after exit")
+        print("   ✅ Workspace persisted after exit")
 
         # Reconnect
         box = await ClaudeBox.reconnect(
@@ -116,7 +115,7 @@ async def test_03_persistent_session(ensure_oauth_token, temp_workspace):
             assert marker.exists()
             assert marker.read_text() == "session 1"
 
-            print(f"   ✅ Reconnection works")
+            print("   ✅ Reconnection works")
 
     finally:
         await ClaudeBox.cleanup_session(
@@ -146,7 +145,7 @@ async def test_04_ephemeral_session(ensure_oauth_token, temp_workspace):
 
     # Workspace should be cleaned up
     assert not workspace_path.exists()
-    print(f"   ✅ Workspace auto-cleaned")
+    print("   ✅ Workspace auto-cleaned")
 
 
 @pytest.mark.asyncio
@@ -213,7 +212,7 @@ async def test_06_cleanup_session(ensure_oauth_token, temp_workspace):
     )
 
     assert not workspace_path.exists()
-    print(f"   ✅ Session cleaned up")
+    print("   ✅ Session cleaned up")
 
 
 @pytest.mark.asyncio
@@ -247,7 +246,7 @@ async def test_07_session_reconnect(ensure_oauth_token, temp_workspace):
         assert (workspace_path / "file1.txt").exists()
         assert (workspace_path / "file2.txt").exists()
 
-        print(f"   ✅ Reconnection preserves workspace")
+        print("   ✅ Reconnection preserves workspace")
 
     finally:
         await ClaudeBox.cleanup_session(

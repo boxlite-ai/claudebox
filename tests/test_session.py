@@ -40,7 +40,7 @@ def test_create_session_writes_file(sample_workspace):
     """Test that create_session writes session.json to disk."""
     manager = SessionManager(sample_workspace)
 
-    metadata = manager.create_session("box_write_test")
+    manager.create_session("box_write_test")
 
     # Verify file exists
     session_file = Path(sample_workspace.session_file)

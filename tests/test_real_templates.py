@@ -65,7 +65,7 @@ async def test_03_template_string(ensure_oauth_token, temp_workspace):
             template="ghcr.io/boxlite-labs/claudebox-runtime:latest",
         ) as box:
             assert box.id
-            print(f"   ✅ Template string works")
+            print("   ✅ Template string works")
 
     finally:
         await ClaudeBox.cleanup_session(
@@ -87,7 +87,7 @@ async def test_04_explicit_image_overrides_template(ensure_oauth_token, temp_wor
             image="ghcr.io/boxlite-labs/claudebox-runtime:latest",  # This takes priority
         ) as box:
             assert box.id
-            print(f"   ✅ Explicit image parameter takes priority")
+            print("   ✅ Explicit image parameter takes priority")
 
     finally:
         await ClaudeBox.cleanup_session(
@@ -145,13 +145,13 @@ async def test_07_template_persistence(ensure_oauth_token, temp_workspace):
             session_id=session_id,
             template=SandboxTemplate.DEFAULT,
         ) as box:
-            print(f"   ✅ Created session with template")
+            print("   ✅ Created session with template")
 
         # Reconnect - should still work (reconnect creates new box with same workspace)
         box = await ClaudeBox.reconnect(session_id, workspace_dir=temp_workspace)
         async with box:
             assert box.id
-            print(f"   ✅ Reconnection works after template session")
+            print("   ✅ Reconnection works after template session")
 
     finally:
         await ClaudeBox.cleanup_session(
@@ -173,7 +173,7 @@ async def test_08_custom_image_url(ensure_oauth_token, temp_workspace):
             template="ghcr.io/boxlite-labs/claudebox-runtime:latest",
         ) as box:
             assert box.id
-            print(f"   ✅ Custom image URL works")
+            print("   ✅ Custom image URL works")
 
     finally:
         await ClaudeBox.cleanup_session(

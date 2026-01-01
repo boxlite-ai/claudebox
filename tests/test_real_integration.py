@@ -16,7 +16,6 @@ import pytest
 
 from claudebox import ClaudeBox
 
-
 # Mark all tests in this file as 'real' (requires infrastructure)
 pytestmark = pytest.mark.real
 
@@ -48,11 +47,10 @@ async def test_real_ephemeral_session(ensure_oauth_token, temp_workspace):
         # Note: exact result format depends on Claude Code output
 
         # Verify file was created in workspace
-        test_file = Path(box.workspace_path) / "test.txt"
+        Path(box.workspace_path) / "test.txt"
         # File should exist (might be created by Claude)
         # assert test_file.exists()  # Uncomment if Claude creates it
 
-        workspace_path = box.workspace_path
 
     # Ephemeral workspace should be cleaned up
     # Note: This check might be timing-dependent
@@ -75,7 +73,7 @@ async def test_real_persistent_session(ensure_oauth_token, temp_workspace):
             assert box.is_persistent is True
 
             # Execute command to create file
-            result = await box.code("Create a file called hello.txt with content 'Hello World'")
+            await box.code("Create a file called hello.txt with content 'Hello World'")
 
             workspace_path = box.workspace_path
 
@@ -91,7 +89,7 @@ async def test_real_persistent_session(ensure_oauth_token, temp_workspace):
 
             # Verify file from previous session exists
             # (This depends on Claude actually creating the file)
-            result = await box.code("List files in /config/workspace")
+            await box.code("List files in /config/workspace")
             # Check result contains evidence of hello.txt if Claude created it
 
     finally:
@@ -138,16 +136,16 @@ async def test_real_workspace_volume_mounting(ensure_oauth_token, temp_workspace
             test_file.write_text("Created from host")
 
             # Execute Claude command to read the file
-            result = await box.code("Read the contents of /config/workspace/host_created.txt")
+            await box.code("Read the contents of /config/workspace/host_created.txt")
 
             # Claude should be able to see the file (if command succeeds)
             # Exact verification depends on Claude's response format
 
             # Create a file from inside the box
-            result = await box.code("Write 'Created from box' to /config/workspace/box_created.txt")
+            await box.code("Write 'Created from box' to /config/workspace/box_created.txt")
 
             # File should appear on host
-            box_file = workspace_path / "box_created.txt"
+            workspace_path / "box_created.txt"
             # Check if file exists (might depend on Claude's execution)
 
     finally:
@@ -262,7 +260,7 @@ def cleanup_test_sessions():
     try:
         import tempfile
 
-        temp_dir = tempfile.gettempdir()
+        tempfile.gettempdir()
         sessions = ClaudeBox.list_sessions()
 
         for session in sessions:

@@ -144,7 +144,7 @@ class ActionLogger:
             return []
 
         logs = []
-        with open(self.history_file, "r") as f:
+        with open(self.history_file) as f:
             for line in f:
                 line = line.strip()
                 if not line:

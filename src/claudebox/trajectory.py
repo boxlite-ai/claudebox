@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from claudebox.logging import ActionLogger
     from claudebox.session import SessionManager
     from claudebox.workspace import SessionWorkspace
 
@@ -245,7 +244,7 @@ class TrajectoryExporter:
         Returns:
             Trajectory data
         """
-        with open(path, "r") as f:
+        with open(path) as f:
             return json.load(f)
 
     @staticmethod

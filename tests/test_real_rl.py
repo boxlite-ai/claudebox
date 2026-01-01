@@ -41,7 +41,7 @@ async def test_01_success_only_reward(ensure_oauth_token, temp_workspace):
             workspace_dir=temp_workspace,
             session_id="rl-test-success",
             reward_fn=reward_fn,
-        ) as box:
+        ):
             # Since we're not executing Claude Code (too slow), just test the reward function
             from claudebox.results import CodeResult
 
@@ -282,7 +282,7 @@ async def test_07_trajectory_export(ensure_oauth_token, temp_workspace):
             workspace_dir=temp_workspace,
             session_id=session_id,
         ) as box:
-            workspace_path = Path(box.workspace_path)
+            Path(box.workspace_path)
 
             # Create trajectory exporter
             exporter = TrajectoryExporter(
@@ -337,7 +337,7 @@ async def test_08_trajectory_save_to_file(ensure_oauth_token, temp_workspace):
             # Load trajectory
             trajectory = TrajectoryExporter.load_trajectory(output_file)
             assert trajectory["session_id"] == session_id
-            print(f"   ✅ Trajectory loaded successfully")
+            print("   ✅ Trajectory loaded successfully")
 
     finally:
         await ClaudeBox.cleanup_session(

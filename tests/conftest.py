@@ -2,8 +2,7 @@
 
 import shutil
 import tempfile
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 

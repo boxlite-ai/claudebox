@@ -76,7 +76,7 @@ async def test_02_skill_with_env_vars(ensure_oauth_token, temp_workspace):
             # Environment variables should be set in the VM
             # (They're passed via BoxOptions env parameter)
             assert box.id
-            print(f"   ✅ Env vars configured")
+            print("   ✅ Env vars configured")
 
     finally:
         await ClaudeBox.cleanup_session(
@@ -118,7 +118,7 @@ async def test_03_skill_with_files(ensure_oauth_token, temp_workspace):
             assert config_file.read_text() == '{"key": "value"}'
             assert script_file.read_text() == "print('Hello from skill')"
 
-            print(f"   ✅ Files injected: config.json, script.py")
+            print("   ✅ Files injected: config.json, script.py")
 
     finally:
         await ClaudeBox.cleanup_session(
@@ -189,7 +189,7 @@ async def test_05_multiple_skills(ensure_oauth_token, temp_workspace):
             assert (skills_dir / "skill_two").exists()
             assert (skills_dir / "skill_three").exists()
 
-            print(f"   ✅ All 3 skills installed")
+            print("   ✅ All 3 skills installed")
 
     finally:
         await ClaudeBox.cleanup_session(
@@ -275,7 +275,7 @@ async def test_08_skill_persistence_across_reconnect(ensure_oauth_token, temp_wo
             assert data_file.exists()
             assert data_file.read_text() == "persistent data"
 
-            print(f"   ✅ Skill file created in first session")
+            print("   ✅ Skill file created in first session")
 
         # Reconnect - skill files should persist
         box = await ClaudeBox.reconnect(session_id, workspace_dir=temp_workspace)
@@ -284,7 +284,7 @@ async def test_08_skill_persistence_across_reconnect(ensure_oauth_token, temp_wo
             assert data_file.exists()
             assert data_file.read_text() == "persistent data"
 
-            print(f"   ✅ Skill file persisted after reconnect")
+            print("   ✅ Skill file persisted after reconnect")
 
     finally:
         await ClaudeBox.cleanup_session(
@@ -305,7 +305,7 @@ async def test_09_skill_validation(ensure_oauth_token, temp_workspace):
     with pytest.raises(ValueError, match="cannot be empty"):
         Skill(name="", description="Empty name")
 
-    print(f"   ✅ Skill validation works")
+    print("   ✅ Skill validation works")
 
 
 @pytest.mark.asyncio
@@ -328,7 +328,7 @@ async def test_10_skill_registry(ensure_oauth_token, temp_workspace):
     assert email_skill.name == "email"
     assert "sendgrid" in email_skill.requirements
 
-    print(f"   ✅ Retrieved email skill from registry")
+    print("   ✅ Retrieved email skill from registry")
 
     # Register custom skill
     custom_skill = Skill(name="custom_test", description="Custom test skill")
@@ -338,4 +338,4 @@ async def test_10_skill_registry(ensure_oauth_token, temp_workspace):
     retrieved = get_skill("custom_test")
     assert retrieved.name == "custom_test"
 
-    print(f"   ✅ Custom skill registered successfully")
+    print("   ✅ Custom skill registered successfully")

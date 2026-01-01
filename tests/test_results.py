@@ -2,8 +2,6 @@
 
 import json
 
-import pytest
-
 from claudebox.results import ActionLog, CodeResult, ResourceMetrics, SessionMetadata
 
 

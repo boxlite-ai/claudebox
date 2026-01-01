@@ -7,7 +7,6 @@ import pytest
 
 from claudebox import ClaudeBox
 
-
 pytestmark = pytest.mark.real
 
 
@@ -66,7 +65,7 @@ async def test_workspace_volume_mounting(ensure_oauth_token, temp_workspace):
         # Verify file exists
         assert test_file.exists()
 
-        print(f"   ✅ Volume mounting works")
+        print("   ✅ Volume mounting works")
 
     # Cleanup
     try:
@@ -109,7 +108,7 @@ async def test_persistent_session(ensure_oauth_token, temp_workspace):
         assert Path(workspace_path).exists()
         assert marker.exists()
 
-        print(f"   ✅ Workspace persisted")
+        print("   ✅ Workspace persisted")
 
         # Reconnect
         box = await ClaudeBox.reconnect(
@@ -123,7 +122,7 @@ async def test_persistent_session(ensure_oauth_token, temp_workspace):
             assert marker.exists()
             assert marker.read_text() == "session 1"
 
-            print(f"   ✅ Reconnection works")
+            print("   ✅ Reconnection works")
 
     finally:
         # Cleanup
@@ -163,7 +162,7 @@ async def test_list_sessions(ensure_oauth_token, temp_workspace):
         for sid in session_ids:
             assert sid in found_ids
 
-        print(f"   ✅ List sessions works")
+        print("   ✅ List sessions works")
 
     finally:
         # Cleanup
@@ -198,4 +197,4 @@ async def test_ephemeral_cleanup(ensure_oauth_token, temp_workspace):
     # Workspace should be cleaned up
     # Note: cleanup happens in __aexit__
     print(f"   Workspace path: {workspace_path}")
-    print(f"   ✅ Ephemeral session complete")
+    print("   ✅ Ephemeral session complete")

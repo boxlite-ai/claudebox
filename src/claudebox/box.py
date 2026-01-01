@@ -357,10 +357,6 @@ class ClaudeBox:
         if not workspace_manager.session_exists(session_id):
             raise SessionNotFoundError(session_id)
 
-        # Load session workspace
-        session_workspace = workspace_manager.get_session_workspace(session_id)
-        session_manager = SessionManager(session_workspace)
-
         # Note: Not using named boxes, so we just create a new box
         # that reuses the existing session workspace
         # The workspace persistence is what matters, not the box itself

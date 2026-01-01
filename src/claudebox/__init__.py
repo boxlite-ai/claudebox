@@ -43,7 +43,6 @@ from claudebox.security import (
     SecurityPolicyEnforcer,
 )
 from claudebox.session import SessionManager
-from claudebox.trajectory import TrajectoryExporter
 from claudebox.skills import (
     API_SKILL,
     AWS_SKILL,
@@ -66,6 +65,7 @@ from claudebox.templates import (
     get_template_image,
     list_templates,
 )
+from claudebox.trajectory import TrajectoryExporter
 from claudebox.workspace import SessionInfo, SessionWorkspace, WorkspaceManager
 
 __version__ = "0.2.0"

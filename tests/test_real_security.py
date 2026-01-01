@@ -42,7 +42,7 @@ async def test_01_security_policy_creation():
     assert policy.file_system == "workspace_only"
     assert policy.allow_sudo is False
 
-    print(f"   ✅ Custom security policy created")
+    print("   ✅ Custom security policy created")
 
 
 @pytest.mark.asyncio
@@ -52,19 +52,19 @@ async def test_02_predefined_policies():
 
     # Test all pre-defined policies
     assert UNRESTRICTED_POLICY.network_access == "full"
-    print(f"   ✅ UNRESTRICTED_POLICY")
+    print("   ✅ UNRESTRICTED_POLICY")
 
     assert STANDARD_POLICY.allow_sudo is False
-    print(f"   ✅ STANDARD_POLICY")
+    print("   ✅ STANDARD_POLICY")
 
     assert RESTRICTED_POLICY.file_system == "workspace_only"
-    print(f"   ✅ RESTRICTED_POLICY")
+    print("   ✅ RESTRICTED_POLICY")
 
     assert READONLY_POLICY.file_system == "readonly"
-    print(f"   ✅ READONLY_POLICY")
+    print("   ✅ READONLY_POLICY")
 
     assert RESEARCH_POLICY.max_disk_usage_gb == 10
-    print(f"   ✅ RESEARCH_POLICY")
+    print("   ✅ RESEARCH_POLICY")
 
 
 @pytest.mark.asyncio
@@ -80,7 +80,7 @@ async def test_03_security_policy_validation():
     with pytest.raises(ValueError, match="file_system must be"):
         SecurityPolicy(file_system="invalid")
 
-    print(f"   ✅ Policy validation works")
+    print("   ✅ Policy validation works")
 
 
 @pytest.mark.asyncio
@@ -100,7 +100,7 @@ async def test_04_policy_enforcer_command_check():
     allowed, reason = enforcer.check_command("echo hello")
     assert allowed
     assert reason is None
-    print(f"   ✅ Allowed safe command")
+    print("   ✅ Allowed safe command")
 
 
 @pytest.mark.asyncio
@@ -119,7 +119,7 @@ async def test_05_policy_enforcer_network_check():
     # Check allowed domain
     allowed, reason = enforcer.check_network_access("api.github.com")
     assert allowed
-    print(f"   ✅ Allowed api.github.com")
+    print("   ✅ Allowed api.github.com")
 
     # Check blocked domain
     allowed, reason = enforcer.check_network_access("secret.internal")
@@ -142,7 +142,7 @@ async def test_06_policy_enforcer_file_check():
     # Check workspace access
     allowed, reason = enforcer.check_file_access("/config/workspace/file.txt")
     assert allowed
-    print(f"   ✅ Allowed workspace access")
+    print("   ✅ Allowed workspace access")
 
     # Check blocked path
     allowed, reason = enforcer.check_file_access("/etc/passwd")
@@ -183,7 +183,7 @@ async def test_08_policy_integration(ensure_oauth_token, temp_workspace):
         ) as box:
             # Policy should be stored
             assert box._security_policy is STANDARD_POLICY
-            print(f"   ✅ Security policy integrated")
+            print("   ✅ Security policy integrated")
 
     finally:
         await ClaudeBox.cleanup_session(
@@ -208,7 +208,7 @@ async def test_09_policy_to_dict():
     assert policy_dict["file_system"] == "workspace_only"
     assert policy_dict["max_disk_usage_gb"] == 5
 
-    print(f"   ✅ Policy serialization works")
+    print("   ✅ Policy serialization works")
 
 
 @pytest.mark.asyncio
@@ -227,4 +227,4 @@ async def test_10_domain_matching():
     assert enforcer._match_domain("example.com", "example.com")
     assert not enforcer._match_domain("api.example.com", "example.com")
 
-    print(f"   ✅ Domain matching works")
+    print("   ✅ Domain matching works")
