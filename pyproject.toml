@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "claudebox"
-version = "0.1.2"
-description = "Run Claude Code CLI in isolated micro-VMs"
+version = "0.2.0"
+description = "Run Claude Code CLI in isolated micro-VMs with persistent workspaces"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
@@ -33,7 +33,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-    "boxlite>=0.4.0",
+    "boxlite>=0.4.4",
 ]
 
 [project.optional-dependencies]
@@ -62,3 +62,6 @@ ignore = ["E501"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+markers = [
+    "real: marks tests as requiring real BoxLite infrastructure and OAuth token (deselect with '-m \"not real\"')",
+]
