@@ -41,7 +41,7 @@ ClaudeBox provides **6 built-in templates**:
 
 **Pre-installed:**
 - Claude Code CLI
-- Python 3.9+
+- Python 3.10+ (supports 3.10-3.14)
 - pip, git
 - Basic Unix utilities
 
@@ -71,7 +71,7 @@ async def default_example():
 **Purpose:** Modern web development with full-stack tools
 
 **Pre-installed:**
-- **Languages:** Node.js 18+, TypeScript, Python 3.9+
+- **Languages:** Node.js 18+, TypeScript, Python 3.10+
 - **Frameworks:** Express, React tooling
 - **Databases:** PostgreSQL client, Redis client
 - **Tools:** Docker CLI, npm, yarn, git
@@ -625,7 +625,7 @@ async def documented_template_usage():
 
     Template includes:
     - Jupyter, pandas, scikit-learn
-    - Pre-configured Python 3.9
+    - Pre-configured Python 3.10+
     """
     async with ClaudeBox(
         template=SandboxTemplate.DATA_SCIENCE,

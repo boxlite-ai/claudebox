@@ -100,7 +100,7 @@ pip install claudebox
 
 ### Prerequisites
 
-- Python 3.9+
+- Python 3.10+ (supports 3.10, 3.11, 3.12, 3.13, 3.14)
 - [BoxLite](https://github.com/boxlite-labs/boxlite) micro-VM runtime
 - Docker (for BoxLite)
 
