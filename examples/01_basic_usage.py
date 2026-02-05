@@ -9,6 +9,7 @@ This demonstrates the fundamental features of ClaudeBox:
 """
 
 import asyncio
+import logging
 
 from claudebox import ClaudeBox
 
@@ -171,4 +172,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG, format="%(name)s %(levelname)s %(message)s")
     asyncio.run(main())

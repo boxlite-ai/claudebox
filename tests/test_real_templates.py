@@ -62,7 +62,7 @@ async def test_03_template_string(ensure_oauth_token, temp_workspace):
             oauth_token=ensure_oauth_token,
             workspace_dir=temp_workspace,
             session_id="template-test-string",
-            template="ghcr.io/boxlite-labs/claudebox-runtime:latest",
+            template="ghcr.io/boxlite-ai/claudebox-runtime:latest",
         ) as box:
             assert box.id
             print("   ✅ Template string works")
@@ -84,7 +84,7 @@ async def test_04_explicit_image_overrides_template(ensure_oauth_token, temp_wor
             workspace_dir=temp_workspace,
             session_id="template-test-override",
             template=SandboxTemplate.WEB_DEV,  # This should be ignored
-            image="ghcr.io/boxlite-labs/claudebox-runtime:latest",  # This takes priority
+            image="ghcr.io/boxlite-ai/claudebox-runtime:latest",  # This takes priority
         ) as box:
             assert box.id
             print("   ✅ Explicit image parameter takes priority")
@@ -170,7 +170,7 @@ async def test_08_custom_image_url(ensure_oauth_token, temp_workspace):
             oauth_token=ensure_oauth_token,
             workspace_dir=temp_workspace,
             session_id="template-custom-url",
-            template="ghcr.io/boxlite-labs/claudebox-runtime:latest",
+            template="ghcr.io/boxlite-ai/claudebox-runtime:latest",
         ) as box:
             assert box.id
             print("   ✅ Custom image URL works")

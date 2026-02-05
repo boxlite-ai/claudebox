@@ -28,7 +28,7 @@ def mock_boxlite_runtime():
     Returns a Mock object with create(), get(), list_info(), and remove() methods.
     """
     runtime = Mock()
-    runtime.create = Mock()
+    runtime.create = AsyncMock()
     runtime.get = Mock()
     runtime.list_info = Mock(return_value=[])
     runtime.remove = Mock()
@@ -60,9 +60,20 @@ def mock_box():
     async def mock_exec(cmd, args=None, env=None):
         execution = Mock()
 
+        # Mock stdin stream (needed for interactive mode)
+        stdin = Mock()
+        stdin.send_input = AsyncMock()
+        stdin.close = AsyncMock()
+        execution.stdin = Mock(return_value=stdin)
+
         # Mock stdout/stderr streams
         async def stdout_stream():
-            yield b'{"result": "success", "is_error": false}\n'
+            # Setup command (sh -c) returns empty stdout
+            if cmd == "sh":
+                return
+            # Claude CLI (via su -c) returns NDJSON messages
+            yield b'{"type":"system","subtype":"init","session_id":"default"}\n'
+            yield b'{"type":"result","result":"success","is_error":false,"total_cost_usd":0,"duration_ms":100}\n'
 
         async def stderr_stream():
             return

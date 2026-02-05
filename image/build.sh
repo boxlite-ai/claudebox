@@ -2,7 +2,7 @@
 set -e
 
 VERSION=${1:-latest}
-IMAGE="ghcr.io/boxlite-labs/claudebox-runtime"
+IMAGE="ghcr.io/boxlite-ai/claudebox-runtime"
 
 echo "Building $IMAGE:$VERSION..."
 docker build -t "$IMAGE:$VERSION" .

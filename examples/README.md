@@ -295,7 +295,7 @@ Complex workflows and production patterns:
 8. **Template as String**
    ```python
    async with ClaudeBox(
-       template="ghcr.io/boxlite-labs/claudebox-runtime:latest"
+       template="ghcr.io/boxlite-ai/claudebox-runtime:latest"
    ) as box:
        ...
    ```
@@ -303,7 +303,7 @@ Complex workflows and production patterns:
 9. **Custom Docker Images**
    ```python
    async with ClaudeBox(
-       image="ghcr.io/boxlite-labs/claudebox-runtime:custom"
+       image="ghcr.io/boxlite-ai/claudebox-runtime:custom"
    ) as box:
        ...
    ```

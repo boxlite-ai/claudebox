@@ -8,6 +8,7 @@ This demonstrates how to use pre-configured sandbox templates:
 """
 
 import asyncio
+import logging
 
 from claudebox import (
     ClaudeBox,
@@ -144,7 +145,7 @@ async def example_template_string():
     # You can use template string directly
     async with ClaudeBox(
         session_id="string-template",
-        template="ghcr.io/boxlite-labs/claudebox-runtime:latest",
+        template="ghcr.io/boxlite-ai/claudebox-runtime:latest",
     ) as box:
         print(f"Using template string directly")
         print(f"  Box ID: {box.id}")
@@ -157,7 +158,7 @@ async def example_custom_image():
     print("\n=== Example 9: Custom Docker Image ===")
 
     # Use a completely custom image
-    custom_image = "ghcr.io/boxlite-labs/claudebox-runtime:latest"
+    custom_image = "ghcr.io/boxlite-ai/claudebox-runtime:latest"
 
     async with ClaudeBox(
         session_id="custom-image", image=custom_image
@@ -177,7 +178,7 @@ async def example_image_overrides_template():
     async with ClaudeBox(
         session_id="override-example",
         template=SandboxTemplate.WEB_DEV,  # This is ignored
-        image="ghcr.io/boxlite-labs/claudebox-runtime:latest",  # This is used
+        image="ghcr.io/boxlite-ai/claudebox-runtime:latest",  # This is used
     ) as box:
         print(f"Image parameter takes priority over template")
         print(f"  Box ID: {box.id}")
@@ -207,7 +208,7 @@ async def example_get_template_image():
     print(f"  {web_dev_image}")
 
     # Works with string too
-    ds_image = get_template_image("ghcr.io/boxlite-labs/claudebox-runtime:data-science")
+    ds_image = get_template_image("ghcr.io/boxlite-ai/claudebox-runtime:data-science")
     print(f"\nData Science image URL:")
     print(f"  {ds_image}")
 
@@ -250,4 +251,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(name)s %(levelname)s %(message)s")
     asyncio.run(main())

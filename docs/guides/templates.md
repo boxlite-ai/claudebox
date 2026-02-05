@@ -47,7 +47,7 @@ ClaudeBox provides **6 built-in templates**:
 
 **Docker Image:**
 ```
-ghcr.io/boxlite-labs/claudebox-runtime:latest
+ghcr.io/boxlite-ai/claudebox-runtime:latest
 ```
 
 **When to use:**
@@ -79,7 +79,7 @@ async def default_example():
 
 **Docker Image:**
 ```
-ghcr.io/boxlite-labs/claudebox-runtime:web-dev
+ghcr.io/boxlite-ai/claudebox-runtime:web-dev
 ```
 
 **When to use:**
@@ -130,7 +130,7 @@ await box.code("Create a full-stack app: React frontend + Express backend")
 
 **Docker Image:**
 ```
-ghcr.io/boxlite-labs/claudebox-runtime:data-science
+ghcr.io/boxlite-ai/claudebox-runtime:data-science
 ```
 
 **When to use:**
@@ -191,7 +191,7 @@ await box.code("Create Jupyter notebook for exploratory analysis")
 
 **Docker Image:**
 ```
-ghcr.io/boxlite-labs/claudebox-runtime:security
+ghcr.io/boxlite-ai/claudebox-runtime:security
 ```
 
 **When to use:**
@@ -246,7 +246,7 @@ await box.code("Decode base64-encoded flag from file")
 
 **Docker Image:**
 ```
-ghcr.io/boxlite-labs/claudebox-runtime:devops
+ghcr.io/boxlite-ai/claudebox-runtime:devops
 ```
 
 **When to use:**
@@ -300,7 +300,7 @@ await box.code("Create Ansible playbook to configure web servers")
 
 **Docker Image:**
 ```
-ghcr.io/boxlite-labs/claudebox-runtime:mobile
+ghcr.io/boxlite-ai/claudebox-runtime:mobile
 ```
 
 **When to use:**
@@ -438,7 +438,7 @@ async def main():
 **1. Create Dockerfile:**
 ```dockerfile
 # Start from ClaudeBox base
-FROM ghcr.io/boxlite-labs/claudebox-runtime:latest
+FROM ghcr.io/boxlite-ai/claudebox-runtime:latest
 
 # Install custom tools
 RUN apt-get update && apt-get install -y \
@@ -479,7 +479,7 @@ async def main():
 ### Example: Custom ML Research Template
 
 ```dockerfile
-FROM ghcr.io/boxlite-labs/claudebox-runtime:data-science
+FROM ghcr.io/boxlite-ai/claudebox-runtime:data-science
 
 # Additional ML frameworks
 RUN pip3 install \
@@ -664,13 +664,13 @@ for name, description in templates.items():
 
 **Error:**
 ```
-Error pulling image 'ghcr.io/boxlite-labs/claudebox-runtime:web-dev'
+Error pulling image 'ghcr.io/boxlite-ai/claudebox-runtime:web-dev'
 ```
 
 **Solution:**
 ```bash
 # Pull image manually
-docker pull ghcr.io/boxlite-labs/claudebox-runtime:web-dev
+docker pull ghcr.io/boxlite-ai/claudebox-runtime:web-dev
 
 # Verify image exists
 docker images | grep claudebox

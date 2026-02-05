@@ -2,17 +2,22 @@
 
 from __future__ import annotations
 
+import asyncio
+import json
+import logging
 import os
 import uuid
-from collections.abc import Callable
-from typing import TYPE_CHECKING
+from collections.abc import AsyncGenerator, Callable
+from typing import TYPE_CHECKING, Any
 
 from claudebox.results import CodeResult, SessionMetadata
 from claudebox.session import SessionManager
 from claudebox.workspace import SessionInfo, WorkspaceManager
 
 if TYPE_CHECKING:
-    from boxlite import Boxlite
+    from boxlite import Box, Boxlite, Execution
+
+logger = logging.getLogger("claudebox")
 
 
 class ClaudeBox:
@@ -25,7 +30,7 @@ class ClaudeBox:
         ...     print(result.response)
     """
 
-    DEFAULT_IMAGE = "ghcr.io/boxlite-labs/claudebox-runtime:latest"
+    DEFAULT_IMAGE = "ghcr.io/boxlite-ai/claudebox-runtime:latest"
 
     def __init__(
         self,
@@ -64,9 +69,7 @@ class ClaudeBox:
             # Check if session already exists (reconnecting)
             if self._workspace_manager.session_exists(session_id):
                 # Reconnecting to existing session
-                self._session_workspace = self._workspace_manager.get_session_workspace(
-                    session_id
-                )
+                self._session_workspace = self._workspace_manager.get_session_workspace(session_id)
             else:
                 # Creating new persistent session
                 self._session_workspace = self._workspace_manager.create_session_workspace(
@@ -114,14 +117,10 @@ class ClaudeBox:
         volumes_list = list(volumes or [])
 
         # Mount workspace directory
-        volumes_list.append(
-            (self._session_workspace.workspace_dir, "/config/workspace")
-        )
+        volumes_list.append((self._session_workspace.workspace_dir, "/config/workspace"))
 
         # Mount metadata directory
-        volumes_list.append(
-            (self._session_workspace.metadata_dir, "/config/.claudebox")
-        )
+        volumes_list.append((self._session_workspace.metadata_dir, "/config/.claudebox"))
 
         self._runtime = runtime or Boxlite.default()
 
@@ -134,26 +133,43 @@ class ClaudeBox:
         if not final_image:
             final_image = self.DEFAULT_IMAGE
 
-        # Note: Not using named boxes for now due to BoxLite naming issues
-        # Boxes are tracked by workspace path instead
-        self._box = self._runtime.create(
-            BoxOptions(
-                image=final_image,
-                cpus=cpus,
-                memory_mib=memory_mib,
-                disk_size_gb=disk_size_gb,
-                env=env_list,
-                volumes=volumes_list,
-                ports=ports or [],
-                auto_remove=auto_remove,
-            ),
+        # Store BoxOptions for deferred creation in __aenter__
+        # (BoxLite's runtime.create() is async, so we can't call it in __init__)
+        self._box_options = BoxOptions(
+            image=final_image,
+            cpus=cpus,
+            memory_mib=memory_mib,
+            disk_size_gb=disk_size_gb,
+            env=env_list,
+            volumes=volumes_list,
+            ports=ports or [],
+            auto_remove=auto_remove,
         )
+        self._box: Box | None = None  # Created in __aenter__
+
+        # Save env for exec() calls (auth + skill vars)
+        self._claude_env = env_list or None
+
+        # Claude CLI persistent process state (for stream())
+        self._execution: Execution | None = None
+        self._stdin: Any = None
+        self._stdout: Any = None
+        self._stderr: Any = None
+        self._stderr_lines: list[str] = []
+        self._stderr_task: asyncio.Task | None = None
+        self._claude_session_id = "default"
+        self._buffer = ""
 
         # Store session metadata (will be updated on first code() call)
         self._session_metadata: SessionMetadata | None = None
 
     async def __aenter__(self) -> ClaudeBox:
+        # Create box now (deferred from __init__ since runtime.create() is async)
+        self._box = await self._runtime.create(self._box_options)
         await self._box.__aenter__()
+
+        # Setup non-root user (Claude CLI rejects --dangerously-skip-permissions as root)
+        await self._setup_claude_user()
 
         # Create or load session metadata
         if self._session_manager.session_exists():
@@ -171,20 +187,34 @@ class ClaudeBox:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
+        # Close Claude CLI persistent process if running
+        if self._stdin:
+            await self._stdin.close()
+        if self._execution:
+            await self._execution.wait()
+        if self._stderr_task and not self._stderr_task.done():
+            self._stderr_task.cancel()
+        self._execution = None
+        self._stdin = None
+        self._stdout = None
+
         # Update session metadata before exit
         if self._session_metadata:
             self._session_manager.update_session(self._session_metadata)
 
         # Clean up ephemeral workspace
         if not self._is_persistent:
-            self._workspace_manager.cleanup_session(
-                self._session_id, remove_workspace=True
-            )
+            self._workspace_manager.cleanup_session(self._session_id, remove_workspace=True)
 
         return await self._box.__aexit__(exc_type, exc_val, exc_tb)
 
     @property
     def id(self) -> str:
+        if self._box is None:
+            raise RuntimeError(
+                "ClaudeBox not started. Use 'async with ClaudeBox() as box:' "
+                "or call 'await box.__aenter__()' first."
+            )
         return self._box.id
 
     @property
@@ -202,6 +232,44 @@ class ClaudeBox:
         """Check if this is a persistent session."""
         return self._is_persistent
 
+    async def _setup_claude_user(self) -> None:
+        """Create non-root user for Claude CLI.
+
+        Claude CLI rejects --dangerously-skip-permissions when running as root.
+        We create a 'claude' user and run all CLI invocations via 'su -c'.
+        """
+        assert self._box is not None
+        setup_script = (
+            "id -u claude >/dev/null 2>&1 || useradd -m -s /bin/bash claude; "
+            "mkdir -p /home/claude; "
+            "chown -R claude:claude /home/claude; "
+            "chmod -R 777 /config/workspace"
+        )
+        execution = await self._box.exec("sh", ["-c", setup_script], None)
+        try:
+            async for _ in execution.stdout():
+                pass
+        except Exception:
+            pass
+        result = await execution.wait()
+        if result.exit_code == 0:
+            logger.debug("Non-root user 'claude' ready")
+        else:
+            logger.warning("Failed to setup non-root user (exit %d)", result.exit_code)
+
+    def _build_claude_cmd(self, claude_args: list[str]) -> tuple[str, list[str]]:
+        """Build su -c command to run Claude CLI as non-root user."""
+        import shlex
+
+        parts = []
+        if self._claude_env:
+            for key, value in self._claude_env:
+                parts.append(f"{key}={shlex.quote(value)}")
+        parts.append("claude")
+        parts.extend(claude_args)
+        cmd_str = " ".join(parts)
+        return "su", ["-c", cmd_str, "claude"]
+
     async def code(
         self,
         prompt: str,
@@ -209,22 +277,148 @@ class ClaudeBox:
         allowed_tools: list[str] | None = None,
         disallowed_tools: list[str] | None = None,
     ) -> CodeResult:
-        """Run Claude Code CLI with a prompt."""
-        args = ["-p", prompt, "--output-format", "json"]
+        """Run Claude Code CLI with a prompt.
+
+        Uses interactive stream-json mode (stdin/stdout) to send the prompt
+        and receive streamed NDJSON responses. Runs as non-root user via su.
+        """
+        assert self._box is not None
+        claude_args = [
+            "--input-format",
+            "stream-json",
+            "--output-format",
+            "stream-json",
+            "--dangerously-skip-permissions",
+            "--verbose",
+        ]
         if max_turns is not None:
-            args.extend(["--max-turns", str(max_turns)])
+            claude_args.extend(["--max-turns", str(max_turns)])
         if allowed_tools:
             for tool in allowed_tools:
-                args.extend(["--allowedTools", tool])
+                claude_args.extend(["--allowedTools", tool])
         if disallowed_tools:
             for tool in disallowed_tools:
-                args.extend(["--disallowedTools", tool])
+                claude_args.extend(["--disallowedTools", tool])
 
-        # Execute claude command directly
-        # Note: script command for TTY emulation has different syntax on macOS vs Linux
-        cmd = "claude " + " ".join(f'"{arg}"' for arg in args)
-        result = await self._exec("/bin/sh", "-c", cmd)
-        code_result = CodeResult.from_exec(result.exit_code, result.stdout, result.stderr)
+        mcp_config_path = getattr(self, "_mcp_config_path", None)
+        if mcp_config_path:
+            claude_args.extend(["--mcp-config", mcp_config_path])
+
+        cmd, cmd_args = self._build_claude_cmd(claude_args)
+        logger.debug("Starting Claude CLI: %s %s", cmd, cmd_args[:2])
+
+        execution = await self._box.exec(cmd, cmd_args, None)
+        stdin = execution.stdin()
+        stdout = execution.stdout()
+        stderr = execution.stderr()
+
+        # Drain stderr in background
+        stderr_lines: list[str] = []
+
+        async def _drain_stderr():
+            if stderr:
+                try:
+                    async for chunk in stderr:
+                        text = (
+                            chunk.decode("utf-8", errors="replace")
+                            if isinstance(chunk, bytes)
+                            else chunk
+                        )
+                        stderr_lines.append(text)
+                        logger.debug("[stderr] %s", text.strip())
+                except Exception:
+                    pass
+
+        stderr_task = asyncio.create_task(_drain_stderr())
+
+        # Send prompt as NDJSON on stdin (interactive mode)
+        msg = {
+            "type": "user",
+            "message": {"role": "user", "content": prompt},
+            "session_id": "default",
+            "parent_tool_use_id": None,
+        }
+        payload = json.dumps(msg) + "\n"
+        logger.debug("Sending prompt (%d bytes)", len(payload))
+        await stdin.send_input(payload.encode())
+
+        # Read NDJSON stream, log each message, collect result
+        buffer = ""
+        result_data = None
+        response_text = ""
+
+        while True:
+            try:
+                chunk = await asyncio.wait_for(stdout.__anext__(), timeout=120)
+            except StopAsyncIteration:
+                break
+            except asyncio.TimeoutError:
+                logger.warning("Claude CLI timed out after 120s")
+                break
+
+            chunk_str = (
+                chunk.decode("utf-8", errors="replace") if isinstance(chunk, bytes) else chunk
+            )
+            buffer += chunk_str
+
+            while "\n" in buffer:
+                line, buffer = buffer.split("\n", 1)
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    parsed = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+
+                msg_type = parsed.get("type")
+
+                if msg_type == "assistant":
+                    for block in parsed.get("message", {}).get("content", []):
+                        if block.get("type") == "text":
+                            logger.info("[claude] %s", block["text"])
+                        elif block.get("type") == "tool_use":
+                            logger.info("[tool_use] %s", block.get("name"))
+
+                elif msg_type == "user":
+                    for block in parsed.get("message", {}).get("content", []):
+                        if block.get("type") == "tool_result" and block.get("is_error"):
+                            logger.warning("[tool_error] %s", str(block.get("content", ""))[:200])
+
+                elif msg_type == "result":
+                    result_data = parsed
+                    response_text = parsed.get("result", "")
+                    cost = parsed.get("total_cost_usd", 0)
+                    duration = parsed.get("duration_ms", 0)
+                    logger.info("[done] cost=$%.4f duration=%.1fs", cost, duration / 1000)
+                    break
+
+            if result_data is not None:
+                break
+
+        # Close stdin and wait for process
+        await stdin.close()
+        exec_result = await execution.wait()
+        stderr_task.cancel()
+
+        # Build CodeResult from stream data
+        is_error = (result_data or {}).get("is_error", False)
+        success = exec_result.exit_code == 0 and not is_error
+        error = None
+        if is_error:
+            error = response_text or "Unknown error"
+        elif exec_result.exit_code != 0:
+            error = "".join(stderr_lines) or f"Exit code {exec_result.exit_code}"
+            if not response_text:
+                response_text = error
+
+        code_result = CodeResult(
+            success=success,
+            response=response_text,
+            exit_code=exec_result.exit_code,
+            raw_output=response_text,
+            error=error,
+        )
 
         # Calculate reward if reward function provided
         if self._reward_fn:
@@ -232,36 +426,133 @@ class ClaudeBox:
 
         return code_result
 
-    async def _exec(self, cmd: str, *args: str):
-        """Execute command in box."""
-        execution = await self._box.exec(cmd, list(args) if args else None, None)
+    async def stream(
+        self,
+        prompt: str,
+    ) -> AsyncGenerator[dict, None]:
+        """Stream Claude Code responses using a persistent process.
 
-        stdout_lines = []
-        if stdout := execution.stdout():
-            async for line in stdout:
-                stdout_lines.append(
-                    line.decode("utf-8", errors="replace") if isinstance(line, bytes) else line
+        Uses the stream-json NDJSON protocol for real-time streaming
+        and multi-turn context preservation. The Claude CLI process
+        is started on first call and reused for subsequent messages.
+
+        Args:
+            prompt: The message to send to Claude.
+
+        Yields:
+            Parsed JSON messages as they arrive from Claude CLI.
+
+        Example:
+            >>> async with ClaudeBox() as box:
+            ...     async for msg in box.stream("Create hello.py"):
+            ...         if msg.get("type") == "assistant":
+            ...             print(msg)
+        """
+        if not self._execution:
+            await self._start_claude()
+        async for msg in self._send_message(prompt):
+            yield msg
+
+    async def _start_claude(self) -> None:
+        """Start Claude CLI in stream-json mode for multi-turn streaming."""
+        assert self._box is not None
+        claude_args = [
+            "--input-format",
+            "stream-json",
+            "--output-format",
+            "stream-json",
+            "--dangerously-skip-permissions",
+            "--verbose",
+        ]
+        mcp_config_path = getattr(self, "_mcp_config_path", None)
+        if mcp_config_path:
+            claude_args.extend(["--mcp-config", mcp_config_path])
+
+        cmd, cmd_args = self._build_claude_cmd(claude_args)
+        logger.debug("Starting Claude CLI (persistent): %s", cmd)
+
+        self._execution = await self._box.exec(cmd, cmd_args, None)
+        self._stdin = self._execution.stdin()
+        self._stdout = self._execution.stdout()
+        self._stderr = self._execution.stderr()
+        self._buffer = ""
+        self._stderr_lines = []
+
+        # Drain stderr in background so errors are captured
+        if self._stderr:
+            self._stderr_task = asyncio.create_task(self._drain_stderr())
+
+    async def _drain_stderr(self) -> None:
+        """Collect stderr output in the background."""
+        assert self._stderr is not None
+        try:
+            async for chunk in self._stderr:
+                text = (
+                    chunk.decode("utf-8", errors="replace") if isinstance(chunk, bytes) else chunk
                 )
+                self._stderr_lines.append(text)
+        except Exception:
+            pass
 
-        stderr_lines = []
-        if stderr := execution.stderr():
-            async for line in stderr:
-                stderr_lines.append(
-                    line.decode("utf-8", errors="replace") if isinstance(line, bytes) else line
-                )
+    async def _send_message(self, content: str) -> AsyncGenerator[dict, None]:
+        """Send a message via NDJSON and yield streamed responses.
 
-        exec_result = await execution.wait()
+        BoxLite streams stdout in fixed-size chunks (not line-buffered),
+        so we buffer data and parse complete JSON lines delimited by newlines.
+        Uses explicit __anext__() with timeout matching the boxlite example.
+        """
+        if not self._stdin or not self._stdout:
+            raise RuntimeError("Claude CLI not started")
 
-        class Result:
-            def __init__(self, exit_code, stdout, stderr):
-                self.exit_code = exit_code
-                self.stdout = stdout
-                self.stderr = stderr
+        msg = {
+            "type": "user",
+            "message": {"role": "user", "content": content},
+            "session_id": self._claude_session_id,
+            "parent_tool_use_id": None,
+        }
+        payload = json.dumps(msg) + "\n"
+        await self._stdin.send_input(payload.encode())
 
-        return Result(exec_result.exit_code, "".join(stdout_lines), "".join(stderr_lines))
+        while True:
+            try:
+                chunk = await asyncio.wait_for(self._stdout.__anext__(), timeout=120)
+            except StopAsyncIteration:
+                self._execution = None
+                break
+            except asyncio.TimeoutError:
+                break
+
+            chunk_str = (
+                chunk.decode("utf-8", errors="replace") if isinstance(chunk, bytes) else chunk
+            )
+            self._buffer += chunk_str
+
+            while "\n" in self._buffer:
+                line, self._buffer = self._buffer.split("\n", 1)
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    parsed = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+
+                if parsed.get("session_id"):
+                    self._claude_session_id = parsed["session_id"]
+
+                yield parsed
+
+                if parsed.get("type") == "result":
+                    return
+
+    @property
+    def stderr_output(self) -> str:
+        """Get captured stderr output (useful for debugging failures)."""
+        return "".join(self._stderr_lines)
 
     def __repr__(self) -> str:
-        return f"ClaudeBox(id={self.id}, session_id={self.session_id})"
+        box_id = self._box.id if self._box else "<not started>"
+        return f"ClaudeBox(id={box_id}, session_id={self.session_id})"
 
     # Enhanced observability methods (Phase 3 Week 7)
 

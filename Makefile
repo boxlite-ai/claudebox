@@ -1,7 +1,7 @@
 .PHONY: build-image publish-image install test lint format clean help
 
 # Configuration
-IMAGE := ghcr.io/boxlite-labs/claudebox-runtime
+IMAGE := ghcr.io/boxlite-ai/claudebox-runtime
 VERSION := $(shell grep 'version = ' pyproject.toml | head -1 | cut -d'"' -f2)
 
 help:
