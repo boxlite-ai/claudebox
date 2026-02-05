@@ -8,12 +8,12 @@ from enum import Enum
 class SandboxTemplate(str, Enum):
     """Pre-configured sandbox templates for different use cases."""
 
-    DEFAULT = "ghcr.io/boxlite-labs/claudebox-runtime:latest"
-    WEB_DEV = "ghcr.io/boxlite-labs/claudebox-runtime:web-dev"
-    DATA_SCIENCE = "ghcr.io/boxlite-labs/claudebox-runtime:data-science"
-    SECURITY = "ghcr.io/boxlite-labs/claudebox-runtime:security"
-    DEVOPS = "ghcr.io/boxlite-labs/claudebox-runtime:devops"
-    MOBILE = "ghcr.io/boxlite-labs/claudebox-runtime:mobile"
+    DEFAULT = "ghcr.io/boxlite-ai/claudebox-runtime:latest"
+    WEB_DEV = "ghcr.io/boxlite-ai/claudebox-runtime:web-dev"
+    DATA_SCIENCE = "ghcr.io/boxlite-ai/claudebox-runtime:data-science"
+    SECURITY = "ghcr.io/boxlite-ai/claudebox-runtime:security"
+    DEVOPS = "ghcr.io/boxlite-ai/claudebox-runtime:devops"
+    MOBILE = "ghcr.io/boxlite-ai/claudebox-runtime:mobile"
 
     def __str__(self) -> str:
         return self.value
@@ -42,7 +42,7 @@ def get_template_image(template: SandboxTemplate | str) -> str:
     """
     if isinstance(template, str):
         # Allow custom image URLs
-        if template.startswith("ghcr.io/") or template.startswith("docker.io/"):
+        if "/" in template and ("." in template.split("/")[0]):
             return template
         # Try to match to enum
         try:

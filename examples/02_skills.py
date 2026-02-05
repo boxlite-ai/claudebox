@@ -9,6 +9,7 @@ This demonstrates how to use pre-built and custom skills:
 """
 
 import asyncio
+import logging
 
 from claudebox import (
     API_SKILL,
@@ -293,4 +294,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(name)s %(levelname)s %(message)s")
     asyncio.run(main())

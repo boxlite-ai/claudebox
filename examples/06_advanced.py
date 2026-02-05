@@ -9,6 +9,7 @@ This demonstrates advanced usage patterns:
 """
 
 import asyncio
+import logging
 
 from claudebox import (
     API_SKILL,
@@ -431,4 +432,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(name)s %(levelname)s %(message)s")
     asyncio.run(main())

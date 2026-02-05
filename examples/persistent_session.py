@@ -6,6 +6,7 @@ Sessions persist across program runs, maintaining workspace state.
 """
 
 import asyncio
+import logging
 
 from claudebox import ClaudeBox
 
@@ -58,4 +59,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(name)s %(levelname)s %(message)s")
     asyncio.run(main())

@@ -88,7 +88,7 @@ If you prefer containerized development:
 
 ```bash
 # Pull the ClaudeBox runtime image
-docker pull ghcr.io/boxlite-labs/claudebox-runtime:latest
+docker pull ghcr.io/boxlite-ai/claudebox-runtime:latest
 
 # Use with ClaudeBox Python API
 python3 -c "from claudebox import ClaudeBox; print('Ready!')"
