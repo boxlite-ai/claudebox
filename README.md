@@ -28,7 +28,7 @@ pip install claudebox
 
 - Python 3.10+
 - BoxLite runtime
-- Docker (required by BoxLite)
+- Docker - Used to pull and manage OCI images (the sandbox itself runs as a micro-VM, not a Docker container)
 
 ## Authentication
 
